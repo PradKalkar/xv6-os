@@ -31,6 +31,8 @@ bootmain(void)
   if(elf->magic != ELF_MAGIC)
     return;  // let bootasm.S handle error
 
+
+  // Load the kernel into the memory
   // Load each program segment (ignores ph flags).
   ph = (struct proghdr*)((uchar*)elf + elf->phoff);
   eph = ph + elf->phnum;
@@ -45,6 +47,8 @@ bootmain(void)
   // Does not return!
   entry = (void(*)(void))(elf->entry);
   entry();
+
+  // after this entry, the control goes to kernel, since it is loaded in the memory
 }
 
 void
