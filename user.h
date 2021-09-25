@@ -23,7 +23,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int draw(void*, uint); // line 26
+int draw(void*, uint); 
+int history(char*, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

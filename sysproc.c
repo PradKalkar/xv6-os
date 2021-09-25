@@ -144,3 +144,15 @@ sys_draw(void)
   // returning the number of bytes copied i.e. size of the google logo
   return google_size;                                                        
 }
+
+/*
+  this is the actual function being called from syscall.c
+  @returns - 0 if suceeded, 1 if no history in the historyId given, 2 if illegal history id
+*/
+int sys_history(void) {
+  char *buffer;
+  int historyId;
+  argptr(0, &buffer, 1);
+  argint(1, &historyId);
+  return getCmdFromHistory(buffer, historyId);
+}
