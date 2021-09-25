@@ -88,6 +88,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->ctime = ticks;
+  p->retime = 0;
+  p->rutime = 0;
+  p->stime = 0;
 
   release(&ptable.lock);
 
@@ -311,6 +315,52 @@ wait(void)
   }
 }
 
+int 
+waitstats(int *retime, int *rutime, int *stime) 
+{
+  struct proc *p; // child process
+  int havekids, pid;
+  struct proc* curproc = myproc(); // parent process
+  acquire(&ptable.lock);
+  for(;;){
+    // find zombie children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent != curproc)
+        continue;
+      havekids = 1;
+      if(p->state == ZOMBIE) { // child is zombie
+      // reset child and remove it from ptable
+        *retime = p->retime;
+        *rutime = p->rutime;
+        *stime = p->stime;
+        pid = p->pid;
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->state = UNUSED;
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        p->ctime = 0;
+        p->retime = 0;
+        p->rutime = 0;
+        p->stime = 0;
+        release(&ptable.lock);
+        return pid;
+      }
+    }
+    // Failed to find children.
+    if(!havekids || curproc->killed) {
+      release(&ptable.lock);
+      return -1;
+    }
+    // Wait for children to exit.
+    sleep(curproc, &ptable.lock);
+  }
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -531,4 +581,28 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+// triggered on every clock tick to update the statistics for each process
+void
+updatestats() 
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    switch(p->state) {
+      case SLEEPING:
+        p->stime++;
+        break;
+      case RUNNABLE:
+        p->retime++;
+        break;
+      case RUNNING:
+        p->rutime++;
+        break;
+      default:
+        ;
+    }
+  }
+  release(&ptable.lock);
 }

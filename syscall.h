@@ -22,3 +22,4 @@
 #define SYS_close    21
 #define SYS_draw     22
 #define SYS_history  23
+#define SYS_wait2    24
