@@ -191,20 +191,10 @@ main(void)
       continue;
     }
 
-    if(fork1() == 0)
-      runcmd(parsecmd(buf));
-    
-    // testing of wait2 only for Userprog.c
-    else if (buf[0] == 'W' && buf[1] == 'a' && buf[2] == 'i' && buf[3] == 't' && 
-            buf[4] == '2' && buf[5] == 'T' && buf[6] == 'e' && buf[7] == 's' && buf[8] == 't' && buf[9] == '\n') {
-      int retime, rutime, stime, pid;
-      pid = wait2(&retime, &rutime, &stime); // system call
-      printf(1, "pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
-    }
-
-    else{
-      wait();
-    }
+    // here parent process is the shell process, 
+    // and the child process will be the one which executes on pressing enter
+    if(fork1() == 0) runcmd(parsecmd(buf));
+    else wait();
 
   }
   exit();
