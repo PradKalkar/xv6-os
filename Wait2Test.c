@@ -18,7 +18,10 @@ int main(void)
     else{
         // inside parent
         // parent waits for child to finish
-        pid = wait2(&retime, &rutime, &stime);
+
+        // we will not use ctime here
+        int ctime;
+        pid = wait2(&retime, &rutime, &stime, &ctime);
         printf(1, "pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
     

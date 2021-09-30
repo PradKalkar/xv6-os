@@ -121,7 +121,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
-int             waitstats(int*, int*, int *);
+int             waitstats(int*, int*, int *, int *);
+int             set_prio(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

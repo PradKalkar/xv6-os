@@ -29,14 +29,16 @@ sys_wait(void)
 int 
 sys_wait2(void) 
 {
-  int *retime, *rutime, *stime;
+  int *retime, *rutime, *stime, *ctime;
   if (argptr(0, (void*)&retime, sizeof(retime)) < 0)
     return -1;
   if (argptr(1, (void*)&rutime, sizeof(retime)) < 0)
     return -1;
   if (argptr(2, (void*)&stime, sizeof(stime)) < 0)
     return -1;
-  return waitstats(retime, rutime, stime);
+  if (argptr(3, (void*)&ctime, sizeof(ctime)) < 0)
+    return -1;
+  return waitstats(retime, rutime, stime, ctime);
 }
 
 int
@@ -168,4 +170,15 @@ int sys_history(void) {
   argptr(0, &buffer, 1);
   argint(1, &historyId);
   return getCmdFromHistory(buffer, historyId);
+}
+
+int sys_set_prio(void) {
+  int priority;
+  argint(0, &priority);
+  return set_prio(priority);
+}
+
+int sys_yield(void) {
+  yield();
+  return 0;
 }

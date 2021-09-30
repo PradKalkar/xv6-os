@@ -25,7 +25,9 @@ int sleep(int);
 int uptime(void);
 int draw(void*, uint); 
 int history(char*, int);
-int wait2(int*, int*, int*);
+int wait2(int*, int*, int*, int*);
+int set_prio(int);
+int yield(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

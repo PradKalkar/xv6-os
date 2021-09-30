@@ -23,3 +23,5 @@
 #define SYS_draw     22
 #define SYS_history  23
 #define SYS_wait2    24
+#define SYS_set_prio 25
+#define SYS_yield    26

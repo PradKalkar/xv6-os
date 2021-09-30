@@ -164,6 +164,23 @@ getcmd(char *buf, int nbuf)
 int
 main(void)
 {
+  printf(1, "Selected scheduling policy: ");
+  #ifdef DEFAULT
+    printf(1, "default\n");
+  #else
+  #ifdef FCFS
+    printf(1, "FCFS\n");
+  #else
+  #ifdef SML
+    printf(1, "SML\n");
+  #else
+  #ifdef DML
+    printf(1, "DML\n");
+  #endif
+  #endif
+  #endif
+  #endif
+  
   static char buf[100];
   int fd;
 
