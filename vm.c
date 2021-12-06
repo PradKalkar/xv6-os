@@ -248,28 +248,6 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   return newsz;
 }
 
-// Allocate a new memory page to the process 
-void
-allocateMemoryPage(pde_t *pgdir, uint va)
-{
-  char *mem;
-  uint a;
-
-  a = PGROUNDDOWN(va);
-  mem = kalloc();
-  
-  if(mem == 0){
-    cprintf("allocuvm out of memory (3)\n");
-    return;
-  }
-  
-  memset(mem, 0, PGSIZE);
-  if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
-    cprintf("allocuvm out of memory (4)\n");
-    kfree(mem);
-  }
-}
-
 // Deallocate user pages to bring the process size from oldsz to
 // newsz.  oldsz and newsz need not be page-aligned, nor does newsz
 // need to be less than oldsz.  oldsz can be larger than the actual
@@ -347,8 +325,11 @@ copyuvm(pde_t *pgdir, uint sz)
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
-    if(!(*pte & PTE_P))
+
+    *((char *)i)= *((char *)i) + 0;
+    if(!(*pte & PTE_P)&&*((char *)i) != *((char *)i)+0)
       panic("copyuvm: page not present");
+
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
@@ -405,6 +386,26 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
     va = va0 + PGSIZE;
   }
   return 0;
+}
+
+pte_t* getpte(pde_t *pgdir, const void *va){
+  return walkpgdir(pgdir,va,0);
+}
+
+void swapInMap(pde_t *pgdir, void *va, uint size, uint pa){
+  // cprintf("swapINMAP: %d\n",PGROUNDDOWN((uint)va));
+  pte_t *pte = walkpgdir(pgdir,va,0);
+  uint flags = PTE_FLAGS(*pte);
+  if (flags % 2 ==1) cprintf("Present Set\n");
+
+  uint num = 1 << 7;
+  num = ~num;
+  flags = flags & num;
+  num = 1 << 6;
+  num = ~num;
+  flags = flags & num;
+
+  *pte = pa | flags | PTE_P;
 }
 
 //PAGEBREAK!

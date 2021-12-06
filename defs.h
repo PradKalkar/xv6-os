@@ -123,6 +123,12 @@ void            wakeup(void*);
 void            yield(void);
 int             waitstats(int*, int*, int *, int *);
 int             set_prio(int);
+void            create_kernel_process(const char *name, void (*entrypoint)());
+void            submitReqToSwapIn(void);
+void            submitReqToSwapOut(void);
+void            swapoutprocess();
+void            swapinprocess();
+void            deleteSwapoutPageFiles();
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -188,7 +194,8 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
-void            allocateMemoryPage(pde_t *pgdir, uint va);
+uint*           getpte(pde_t *pgdir, const void *va);
+void            swapInMap(pde_t *pgdir, void *va, uint size, uint pa);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

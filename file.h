@@ -6,6 +6,7 @@ struct file {
   struct pipe *pipe;
   struct inode *ip;
   uint off;
+  char name[14];  // Filename 
 };
 
 

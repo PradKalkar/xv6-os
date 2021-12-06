@@ -82,15 +82,36 @@ kfree(char *v)
 char*
 kalloc(void)
 {
-  struct run *r;
 
-  if(kmem.use_lock)
+  if(kmem.use_lock){
     acquire(&kmem.lock);
-  r = kmem.freelist;
-  if(r)
-    kmem.freelist = r->next;
-  if(kmem.use_lock)
+  }
+    
+  struct run *cur = kmem.freelist;
+
+  while (!cur) {
+    if (kmem.use_lock){
+      release(&kmem.lock);
+    }
+      
+    submitReqToSwapOut();
+
+    if (kmem.use_lock){
+      acquire(&kmem.lock);
+    }
+      
+    cur = kmem.freelist;
+  }
+
+  if (cur){
+    kmem.freelist = cur->next;
+  }
+    
+  if (kmem.use_lock) {
     release(&kmem.lock);
-  return (char*)r;
+  }
+
+  char* char_cur = (char *)cur;
+  return char_cur;    
 }
 

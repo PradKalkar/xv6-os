@@ -13,6 +13,7 @@ struct gatedesc idt[256];
 extern uint vectors[]; // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
+pte_t pte;
 extern int inc_ticks_elapsed(void);
 extern void dec_prio(void);
 
@@ -93,8 +94,15 @@ void trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_PGFLT:
-    // rcr2() is giving the virtual address
-    allocateMemoryPage(myproc()->pgdir, rcr2());
+    pte = *getpte(myproc()->pgdir,(void *)rcr2());
+    cprintf("|       Page Fault          |  -  | -  | Page fault has occured due to insufficient memory |\n");
+    myproc()->trapva = rcr2();
+    if(myproc()->trapva < myproc()->sz && (pte&((uint)1<<7)) != 0)
+    {
+      submitReqToSwapIn();
+      break;
+    }
+    myproc()->killed = 1;
     break;
 
   //PAGEBREAK: 13
